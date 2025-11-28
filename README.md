@@ -33,7 +33,7 @@ todolist-mcp/
 
 ---
 
-## Installation
+## Installation And Run
 
 1. Clone the repository:
 
@@ -54,6 +54,18 @@ PORT=3222
 ```
 NEXT_PUBLIC_API_PORT=3222
 NEXT_PUBLIC_API_LOCALHOST=localhost
+```
+
+4.
+
+```
+cd todolist-mcp
+
+cd server
+npm run dev || npm start
+
+cd ui
+npm run dev || npm run build && npm start
 ```
 
 ---
