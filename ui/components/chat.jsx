@@ -24,8 +24,8 @@ export default function ChatBox() {
         <CardTitle>Chat</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="h-100 overflow-y-auto rounded text-sm">
+      <CardContent className="space-y-4 p-0">
+        <div className="h-100 overflow-y-auto rounded text-sm  px-6">
           {messages.length === 0 && (
             <p className="text-muted-foreground">Không có tin nhắn…</p>
           )}
@@ -44,9 +44,10 @@ export default function ChatBox() {
             e.preventDefault();
             sendMessage();
           }}
-          className="flex gap-2 items-end"
+          className="flex gap-2 items-end px-6 "
         >
           <Textarea
+            className={"max-h-60 resize-none flex-1"}
             placeholder="Nhập tin nhắn…"
             value={text}
             onChange={(e) => setText(e.target.value)}
