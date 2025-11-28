@@ -238,4 +238,97 @@ const deleteManyTodoConfig = {
 mcp.registerTool("delete_many_todo", deleteManyTodoConfig);
 toolsMap.set("delete_many_todo", deleteManyTodoConfig);
 
+const deleteTodoByNameConfig = {
+  name: "delete_todo_by_name",
+  description: "Xóa todo theo tên (title)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "Tên todo cần xóa" },
+    },
+    required: ["title"],
+  },
+
+  execute: async ({ title }) => {
+    let todos = readData();
+
+    // Tìm các todo cần xóa
+    const deleted = todos.filter((t) => t.title === title);
+
+    if (deleted.length === 0) {
+      return {
+        success: false,
+        error: "Không tìm thấy todo có tên này",
+      };
+    }
+
+    // Giữ lại các todo còn lại
+    todos = todos.filter((t) => t.title !== title);
+
+    writeData(todos);
+
+    return {
+      success: true,
+      deleted,
+    };
+  },
+};
+
+mcp.registerTool("delete_todo_by_name", deleteTodoByNameConfig);
+toolsMap.set("delete_todo_by_name", deleteTodoByNameConfig);
+
+const updateTodoByNameConfig = {
+  name: "update_todo_by_name",
+  description: "Cập nhật todo theo tên (title)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "Tên todo cần cập nhật" },
+      newTitle: {
+        type: "string",
+        description: "Tên mới (nếu không muốn thay đổi, bỏ trống)",
+      },
+      date: {
+        type: "string",
+        description:
+          "Ngày mới (YYYY-MM-DD) (nếu không muốn thay đổi, bỏ trống)",
+      },
+      done: {
+        type: "boolean",
+        description:
+          "Trạng thái hoàn thành (nếu không muốn thay đổi, bỏ trống)",
+      },
+    },
+    required: ["title"],
+  },
+
+  execute: async ({ title, newTitle, date, done }) => {
+    const todos = readData();
+
+    const target = todos.find((t) => t.title === title);
+
+    if (!target) {
+      return {
+        success: false,
+        error: "Không tìm thấy todo để cập nhật",
+      };
+    }
+
+    // Cập nhật
+    if (newTitle !== undefined) target.title = newTitle || target.title;
+    if (date !== undefined) target.date = date || target.date;
+    if (done !== undefined) target.done = done || target.done;
+
+    writeData(todos);
+
+    return {
+      success: true,
+      updated: target,
+    };
+  },
+};
+
+mcp.registerTool("update_todo_by_name", updateTodoByNameConfig);
+toolsMap.set("update_todo_by_name", updateTodoByNameConfig);
+
 export { mcp, toolsMap };

@@ -44,10 +44,12 @@ export default function ChatBox() {
           break;
 
         case "update_todo":
+        case "update_todo_by_name":
           if (ac.updated && typeof ac.updated === "object")
             updateTodo(ac.updated.id, ac.updated);
           break;
         case "delete_todo":
+        case "delete_todo_by_name":
           if (ac.deleted && typeof ac.deleted === "object")
             deleteTodo(ac.deleted.id);
           break;

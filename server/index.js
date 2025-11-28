@@ -34,6 +34,12 @@ QUAN TRỌNG: Nếu user yêu cầu NHIỀU hành động (thêm + cập nhật,
 2. Sau khi nhận kết quả tool, tiếp tục gọi tool tiếp theo
 3. Chỉ trả response cuối cùng khi ĐÃ HOÀN THÀNH TẤT CẢ hành động
 4. Nếu có nhiều action thid đánh số thứ tự trong response để user dễ theo dõi
+5. Nếu xóa/sửa theo tên nếu user nhập không đúng chính tả, upper/lower case, hãy tìm tên gần đúng nhất và xóa
+6. Luôn truyền vào giá trị title với dạng capitalized khi sửa/thêm todo
+
+Hạn chế:
+- Chỉ được thực hiện tối đa ${maxActions} hành động trong 1 lần tương tác với user.
+- Nếu vượt quá giới hạn, phải trả về assistant message thông báo đã đạt giới hạn và hỏi user có muốn tiếp tục không.
 
 Nếu số hành động cần thực hiện > ${maxActions + 1} của server:
 
@@ -53,6 +59,9 @@ Tools có sẵn:
 - complete_todo: Đánh dấu hoàn thành (cần id) (hoàn thành, done, complete)
 - add_many_todo: Thêm nhiều todo cùng lúc (cần items: [{title, date}]) (thêm nhiều, tạo nhiều)
 - delete_many_todo: Xóa nhiều todo theo danh sách ID (cần ids: [id]) (xóa nhiều, remove nhiều)
+- delete_todo_by_name: xóa todo theo tên (cần title) (xóa theo tên, remove theo tên)
+- update_todo_by_name: Cập nhật todo theo tên (cần title, newTitle?, date?, done?) (cập nhật theo tên, sửa theo tên)
+
 
 Luôn map đúng intent sang tool.`;
 
