@@ -62,6 +62,8 @@ NEXT_PUBLIC_API_LOCALHOST=localhost
 
 You can run both UI and server at once:
 
+- Get Cloud API here : https://ollama.com/settings/keys
+
 ```bash
 # Pass environment variables via command line
 OLLAMA_API_KEY=your_ollama_api_key SERVER_PORT=your_server_port CLIENT_PORT=your_client_port docker compose up --build
