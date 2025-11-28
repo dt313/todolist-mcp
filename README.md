@@ -38,7 +38,7 @@ todolist-mcp/
 1. Clone the repository:
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/dt313/todolist-mcp.git
 cd todolist-mcp
 ```
 
