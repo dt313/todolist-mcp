@@ -5,9 +5,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { toolsMap } from "./mcp.js";
 import { readData, writeData } from "./file.js";
-const PORT = 3000;
-const NODE_ENV = process.env.NODE_ENV || "development";
 dotenv.config({ path: "./.env" });
+
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 const todoSchema = z.object({
   title: z.string().min(1, "Title cannot be empty"),
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {

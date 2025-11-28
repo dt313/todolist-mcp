@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    container_name: todolist-server
+    ports:
+      - "${SERVER_PORT:-3222}:3222"  # Mặc định 3222 nếu không truyền
+    environment:
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}  # Lấy từ biến môi trường command line
+      - PORT=${SERVER_PORT:-3222}
+    restart: unless-stopped
+
+  ui:
+    build: ./ui
+    container_name: todolist-ui
+    ports:
+      - "${CLIENT_PORT:-3333}:3333"  # Mặc định 3333 nếu không truyền
+    environment:
+      - NEXT_PUBLIC_API_PORT=${SERVER_PORT:-3222}
+      - NEXT_PUBLIC_API_LOCALHOST=localhost
+      - CLIENT_PORT=${CLIENT_PORT:-3333}
+    depends_on:
+      - server
+    restart: unless-stopped
