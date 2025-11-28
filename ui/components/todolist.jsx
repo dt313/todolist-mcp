@@ -1,7 +1,7 @@
 // components/todo-list.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useTodos } from "@/context/todo.context";
+import { getApiUrl } from "@/utils/get-api-url";
 export default function TodoList() {
   const { todos, addTodo, updateTodo, deleteTodo } = useTodos();
   const [text, setText] = useState("");
@@ -30,7 +31,7 @@ export default function TodoList() {
       done: false,
     };
 
-    const res = await fetch("http://localhost:3000/todos", {
+    const res = await fetch(`${getApiUrl()}/todos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTodo),
@@ -50,7 +51,7 @@ export default function TodoList() {
 
     console.log(newTodos[index]);
 
-    fetch(`http://localhost:3000/todos/${newTodos[index].id}`, {
+    fetch(`${getApiUrl()}/todos/${newTodos[index].id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -64,7 +65,7 @@ export default function TodoList() {
   const deleteTodoItem = (id) => {
     const newTodos = [...todos];
 
-    fetch(`http://localhost:3000/todos/${id}`, {
+    fetch(`${getApiUrl()}/todos/${id}`, {
       method: "DELETE",
     });
 
@@ -77,7 +78,7 @@ export default function TodoList() {
     newTodos[index].title = title;
     newTodos[index].date = date || newTodos[index].date;
 
-    fetch(`http://localhost:3000/todos/${newTodos[index].id}`, {
+    fetch(`${getApiUrl()}/todos/${newTodos[index].id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

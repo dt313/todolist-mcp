@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 // Tạo context
 const TodoContext = createContext();
-
+import { getApiUrl } from "@/utils/get-api-url";
 // Provider
 export const TodoProvider = ({ children }) => {
   const [todos, setTodos] = useState([]);
@@ -25,7 +25,7 @@ export const TodoProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchTodos = async () => {
-      const res = await fetch("http://localhost:3000/todos");
+      const res = await fetch(`${getApiUrl()}/todos`);
       const data = await res.json();
       setTodos(data || []);
     };

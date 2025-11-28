@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "./ui/textarea";
 import { Send } from "lucide-react";
-
+import { getApiUrl } from "@/utils/get-api-url";
 import MarkdownMessage from "./markdown-message";
 import { useTodos } from "@/context/todo.context";
 export default function ChatBox() {
@@ -84,7 +84,7 @@ export default function ChatBox() {
     setText("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/ask", {
+      const res = await fetch(`${getApiUrl()}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: text }),
