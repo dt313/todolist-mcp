@@ -240,7 +240,7 @@ toolsMap.set("delete_many_todo", deleteManyTodoConfig);
 
 const deleteTodoByNameConfig = {
   name: "delete_todo_by_name",
-  description: "Xóa todo theo tên (title)",
+  description: "Xóa todo đầu tiên tìm thấy theo tên (title)",
   inputSchema: {
     type: "object",
     properties: {
@@ -250,20 +250,21 @@ const deleteTodoByNameConfig = {
   },
 
   execute: async ({ title }) => {
-    let todos = readData();
+    const todos = readData();
 
-    // Tìm các todo cần xóa
-    const deleted = todos.filter((t) => t.title === title);
+    const targetIndex = todos.findIndex((t) => t.title === title);
 
-    if (deleted.length === 0) {
+    if (targetIndex === -1) {
       return {
         success: false,
         error: "Không tìm thấy todo có tên này",
       };
     }
 
-    // Giữ lại các todo còn lại
-    todos = todos.filter((t) => t.title !== title);
+    const deleted = todos[targetIndex];
+
+    // Xóa todo
+    todos.splice(targetIndex, 1);
 
     writeData(todos);
 

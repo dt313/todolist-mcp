@@ -1,17 +1,5 @@
 [
   {
-    "id": 2,
-    "title": "Optimize Database Queries 11",
-    "date": "2025-11-12T15:00:00.000Z",
-    "done": false
-  },
-  {
-    "id": 3,
-    "title": "Write Unit Tests For Api",
-    "date": "2025-12-03",
-    "done": false
-  },
-  {
     "id": 4,
     "title": "Buy Groceries",
     "date": "2025-12-01",
