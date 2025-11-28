@@ -29,6 +29,16 @@ export default function TodoItem({ todo, onToggle, onDelete, onUpdate }) {
     }
   }, [isEditing]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isEditing) {
+      const newDate = todo.date ? new Date(todo.date) : null;
+      if (!date || newDate.getTime() !== date.getTime()) {
+        setDate(newDate);
+      }
+    }
+  }, [isEditing, todo.date]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {

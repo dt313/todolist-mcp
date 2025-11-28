@@ -14,20 +14,13 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { useTodos } from "@/context/todo.context";
 export default function TodoList() {
-  const [todos, setTodos] = useState([]);
+  const { todos, addTodo, updateTodo, deleteTodo } = useTodos();
   const [text, setText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
 
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const res = await fetch("http://localhost:3000/todos");
-      const data = await res.json();
-      setTodos(data);
-    };
-    fetchTodos();
-  }, []);
-  const addTodo = async () => {
+  const addTodoItem = async () => {
     if (!text.trim()) return;
     if (!selectedDate) return alert("Bạn chưa chọn ngày!");
 
@@ -45,40 +38,44 @@ export default function TodoList() {
 
     const saved = await res.json();
 
-    setTodos([...todos, saved]);
+    addTodo(saved);
     setText("");
     setSelectedDate(null);
   };
 
-  const toggleTodo = (index) => {
+  const toggleTodo = (id) => {
     const newTodos = [...todos];
+    const index = newTodos.findIndex((t) => t.id === id);
     newTodos[index].done = !newTodos[index].done;
+
+    console.log(newTodos[index]);
 
     fetch(`http://localhost:3000/todos/${newTodos[index].id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newTodos[index]),
+      body: JSON.stringify({ done: newTodos[index].done }),
     });
 
-    setTodos(newTodos);
+    updateTodo(id, { done: newTodos[index].done });
   };
 
-  const deleteTodo = (index) => {
+  const deleteTodoItem = (id) => {
     const newTodos = [...todos];
 
-    fetch(`http://localhost:3000/todos/${newTodos[index].id}`, {
+    fetch(`http://localhost:3000/todos/${id}`, {
       method: "DELETE",
     });
 
-    newTodos.splice(index, 1);
-    setTodos(newTodos);
+    deleteTodo(id);
   };
 
-  const updateTodo = (index, title) => {
+  const updateTodoItem = (id, title, date) => {
     const newTodos = [...todos];
+    const index = newTodos.findIndex((t) => t.id === id);
     newTodos[index].title = title;
+    newTodos[index].date = date || newTodos[index].date;
 
     fetch(`http://localhost:3000/todos/${newTodos[index].id}`, {
       method: "PUT",
@@ -88,17 +85,17 @@ export default function TodoList() {
       body: JSON.stringify(newTodos[index]),
     });
 
-    setTodos(newTodos);
+    updateTodo(newTodos[index].id, newTodos[index]);
   };
 
   return (
-    <Card className="w-full ">
-      <CardHeader>
-        <CardTitle>Todo List</CardTitle>
+    <Card className="w-full gap-0">
+      <CardHeader className="border-b py-0 pb-4 [.border-b]:pb-4">
+        <CardTitle>Todolist</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="space-y-4 p-0">
+        <div className="space-y-2 max-h-100 overflow-y-auto px-6 py-6">
           {todos.length === 0 && (
             <p className="text-muted-foreground">Chưa có công việc nào…</p>
           )}
@@ -107,9 +104,9 @@ export default function TodoList() {
             <TodoItem
               key={todo.id}
               todo={todo}
-              onToggle={() => toggleTodo(i)}
-              onDelete={() => deleteTodo(i)}
-              onUpdate={(title) => updateTodo(i, title)}
+              onToggle={() => toggleTodo(todo.id)}
+              onDelete={() => deleteTodoItem(todo.id)}
+              onUpdate={(title, date) => updateTodoItem(todo.id, title, date)}
             />
           ))}
         </div>
@@ -117,9 +114,9 @@ export default function TodoList() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            addTodo();
+            addTodoItem();
           }}
-          className="flex gap-2"
+          className="flex gap-2 px-6"
         >
           <Input
             placeholder="Thêm công việc…"

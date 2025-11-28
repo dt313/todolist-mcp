@@ -24,6 +24,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const maxActions = parseInt(process.env.MAX_ACTIONS) || 5;
+
 // System prompt để hướng dẫn LLM
 const systemPrompt = `Bạn là AI assistant quản lý todo list.
 
@@ -33,12 +35,24 @@ QUAN TRỌNG: Nếu user yêu cầu NHIỀU hành động (thêm + cập nhật,
 3. Chỉ trả response cuối cùng khi ĐÃ HOÀN THÀNH TẤT CẢ hành động
 4. Nếu có nhiều action thid đánh số thứ tự trong response để user dễ theo dõi
 
+Nếu số hành động cần thực hiện > ${maxActions + 1} của server:
+
+1. Thực hiện tối đa số actions còn lại.
+2. Sau khi hết quota, phải trả về assistant message:
+   - Báo rõ đã thực hiện bao nhiêu actions
+   - Chưa hoàn thành yêu cầu của user
+   - Hỏi user có muốn tiếp tục không?
+   - Không bao giờ trả lời như thể đã xong.
+
+
 Tools có sẵn:
 - get_todos: Lấy tất cả todo (show ,xem, lấy danh sách, etc.)
 - add_todo: Thêm todo mới (cần title, date) (thêm, tạo, tạo mới)
 - update_todo: Cập nhật todo (cần id, title?, date?) (cập nhật, sửa, chỉnh sửa)
 - delete_todo: Xóa todo (cần id) (xóa, remove)
 - complete_todo: Đánh dấu hoàn thành (cần id) (hoàn thành, done, complete)
+- add_many_todo: Thêm nhiều todo cùng lúc (cần items: [{title, date}]) (thêm nhiều, tạo nhiều)
+- delete_many_todo: Xóa nhiều todo theo danh sách ID (cần ids: [id]) (xóa nhiều, remove nhiều)
 
 Luôn map đúng intent sang tool.`;
 
@@ -141,14 +155,11 @@ app.post("/ask", async (req, res) => {
     ];
 
     let continueLoop = true;
-    let maxIterations = 5; // Giới hạn số lần loop để tránh vòng lặp vô hạn
+
     let iteration = 0;
-
+    let actions = [];
     // Loop để xử lý multiple tool calls
-    while (continueLoop && iteration < maxIterations) {
-      iteration++;
-      console.log(`\n=== Iteration ${iteration} ===`);
-
+    while (continueLoop && iteration < maxActions) {
       // Gửi request đến LLM
       const response = await ollama.chat({
         model: "gpt-oss:120b",
@@ -177,6 +188,15 @@ app.post("/ask", async (req, res) => {
         // Thực hiện tất cả tool calls
         for (const toolCall of response.message.tool_calls) {
           const tool = toolsMap.get(toolCall.function.name);
+          if (toolCall.function.name !== "get_todos") {
+            iteration++;
+            console.log(`\n=== Iteration ${iteration} ===`);
+
+            messages.push({
+              role: "system",
+              content: `Số actions còn lại: ${maxActions - iteration}`,
+            });
+          }
           if (tool) {
             const args = toolCall.function.arguments;
             console.log(`Executing ${toolCall.function.name} with args:`, args);
@@ -198,6 +218,13 @@ app.post("/ask", async (req, res) => {
                 content: JSON.stringify(result),
                 tool_call_id: toolCall.id,
               });
+
+              actions.push({
+                action: tool.name,
+                updated: result.updated || null,
+                created: result.created || null,
+                deleted: result.deleted || null,
+              });
             }
           }
         }
@@ -211,12 +238,23 @@ app.post("/ask", async (req, res) => {
         return res.json({
           answer: response.message.content,
           iterations: iteration,
+          actions,
         });
       }
     }
 
     // Nếu đạt max iterations, tạo response cuối cùng
-    if (iteration >= maxIterations) {
+    if (iteration >= maxActions) {
+      messages.push({
+        role: "system",
+        content: `Đã đạt đến giới hạn ${maxActions} hành động. Kết thúc phiên làm việc.`,
+      });
+
+      messages.push({
+        role: "system",
+        content: `Trả về assistant message thông báo đã thực hiện ${maxActions} hành động (tóm tắt tổng quan các hành động đã thực hiện), chưa hoàn thành yêu cầu của user, và hỏi user có muốn tiếp tục không?`,
+      });
+
       const finalResponse = await ollama.chat({
         model: "gpt-oss:120b",
         messages: messages,
@@ -224,9 +262,13 @@ app.post("/ask", async (req, res) => {
       });
 
       return res.json({
-        answer: finalResponse.message.content,
+        answer:
+          finalResponse.message.content ||
+          "Max iterations reached. Actions completed: \n" +
+            actions.map((a) => a.action).join(", "),
         iterations: iteration,
         note: "Reached max iterations",
+        actions,
       });
     }
   } catch (err) {

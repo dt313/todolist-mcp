@@ -46,15 +46,80 @@ const addTaskConfig = {
       };
     }
     const id = todos.length > 0 ? todos[todos.length - 1].id + 1 : 1;
-    const newTodo = { id, title, date };
+    const newTodo = { id, title, date, done: false };
     todos.push(newTodo);
     writeData(todos);
-    return { success: true, todo: newTodo };
+    return { success: true, created: newTodo };
   },
 };
 
 mcp.registerTool("add_todo", addTaskConfig);
 toolsMap.set("add_todo", addTaskConfig);
+
+const addManyTodoConfig = {
+  name: "add_many_todo",
+  description: "Thêm nhiều todo vào database cùng lúc",
+  inputSchema: {
+    type: "object",
+    properties: {
+      items: {
+        type: "array",
+        description: "Danh sách nhiều todo",
+        items: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            date: { type: "string" },
+          },
+          required: ["title", "date"],
+        },
+      },
+    },
+    required: ["items"],
+  },
+
+  execute: async ({ items }) => {
+    let todos = readData();
+
+    const created = [];
+    const skipped = [];
+
+    for (const { title, date } of items) {
+      // Check duplicate
+      const duplicate = todos.find((t) => t.title === title && t.date === date);
+
+      if (duplicate) {
+        skipped.push({
+          title,
+          date,
+          reason: "Duplicate title + date",
+        });
+        continue;
+      }
+
+      // Create ID
+      const id = todos.length > 0 ? todos[todos.length - 1].id + 1 : 1;
+
+      const newTodo = { id, title, date, done: false };
+      todos.push(newTodo);
+      created.push(newTodo);
+    }
+
+    // Save once
+    writeData(todos);
+
+    return {
+      success: true,
+      created,
+      skipped,
+      count_created: created.length,
+      count_skipped: skipped.length,
+    };
+  },
+};
+
+mcp.registerTool("add_many_todo", addManyTodoConfig);
+toolsMap.set("add_many_todo", addManyTodoConfig);
 
 const deleteTaskConfig = {
   name: "delete_todo",
@@ -95,10 +160,15 @@ const updateTodoConfig = {
         type: "string",
         description: "Ngày mới (nếu không muốn thay đổi, bỏ trống)",
       },
+      done: {
+        type: "boolean",
+        description:
+          "Trạng thái hoàn thành mới (nếu không muốn thay đổi, bỏ trống)",
+      },
     },
     required: ["id"],
   },
-  execute: async ({ id, title, date }) => {
+  execute: async ({ id, title, date, done }) => {
     const todos = readData();
     const index = todos.findIndex((t) => t.id === id);
     if (index === -1) return { success: false, error: "Todo not found" };
@@ -114,14 +184,58 @@ const updateTodoConfig = {
       ...todos[index],
       title: title || todos[index].title,
       date: date || todos[index].date,
+      done: done !== undefined ? done : todos[index].done,
     };
 
     writeData(todos);
-    return { success: true, todo: todos[index] };
+    return { success: true, updated: todos[index] };
   },
 };
 
 mcp.registerTool("update_todo", updateTodoConfig);
 toolsMap.set("update_todo", updateTodoConfig);
+
+const deleteManyTodoConfig = {
+  name: "delete_many_todo",
+  description: "Xóa nhiều todo theo danh sách ID",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ids: {
+        type: "array",
+        items: { type: "number" },
+        description: "Danh sách ID cần xóa",
+      },
+    },
+    required: ["ids"],
+  },
+
+  execute: async ({ ids }) => {
+    const todos = readData();
+
+    // Lọc các todo bị xóa
+    const deleted = todos.filter((t) => ids.includes(t.id));
+
+    if (deleted.length === 0) {
+      return {
+        success: false,
+        error: "Không tìm thấy todo nào để xóa",
+      };
+    }
+
+    // Lọc lại danh sách todo sau khi xóa
+    const updated = todos.filter((t) => !ids.includes(t.id));
+
+    writeData(updated);
+
+    return {
+      success: true,
+      deleted,
+    };
+  },
+};
+
+mcp.registerTool("delete_many_todo", deleteManyTodoConfig);
+toolsMap.set("delete_many_todo", deleteManyTodoConfig);
 
 export { mcp, toolsMap };
