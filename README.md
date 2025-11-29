@@ -93,8 +93,8 @@ Or use default values if not provided:
 ### MCP (Model Context Protocol)
 
 - `create_todo` / `add_todo`
-- `delete_todo` by id or by name
-- `update_todo` by id or by name
+- `delete_todo by id or by name`
+- `update_todo by id or by name`
 - `delete_many_todo`
 - `add_many_todo`
 
