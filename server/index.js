@@ -14,6 +14,7 @@ const todoSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format",
   }),
+  done: z.boolean().optional(),
 });
 
 const ollama = new Ollama({
@@ -127,6 +128,7 @@ app.put("/todos/:id", (req, res) => {
       t.title === updatedData.title &&
       t.date === updatedData.date
   );
+
   if (duplicate) {
     return res
       .status(400)
@@ -134,6 +136,8 @@ app.put("/todos/:id", (req, res) => {
   }
 
   todos[index] = updatedData;
+
+  console.log("Updated todo:", todos[index]);
   writeData(todos);
 
   res.json(todos[index]);

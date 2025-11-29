@@ -51,7 +51,7 @@ export default function TodoList() {
 
     console.log(newTodos[index]);
 
-    fetch(`${getApiUrl()}/todos/${newTodos[index].id}`, {
+    fetch(`${getApiUrl()}/todos/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

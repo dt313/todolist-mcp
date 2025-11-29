@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Buy Groceries",
+    "date": "2025-11-21T15:00:00.000Z",
+    "done": true
+  },
+  {
+    "id": 2,
+    "title": "Call Doctor",
+    "date": "2025-12-02",
+    "done": false
+  },
+  {
+    "id": 3,
+    "title": "Finish Report",
+    "date": "2025-12-03",
+    "done": false
+  },
+  {
+    "id": 4,
+    "title": "Plan Vacation",
+    "date": "2025-12-04",
+    "done": false
+  },
+  {
+    "id": 5,
+    "title": "Read Book",
+    "date": "2025-12-05",
+    "done": false
+  }
+]

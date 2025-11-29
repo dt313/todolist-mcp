@@ -56,7 +56,7 @@ NEXT_PUBLIC_API_PORT=3222
 NEXT_PUBLIC_API_LOCALHOST=localhost
 ```
 
-4.
+4. Run local
 
 ```
 cd todolist-mcp
