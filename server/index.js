@@ -9,6 +9,9 @@ dotenv.config({ path: "./.env" });
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
+
+const conversations = new Map();
+
 const todoSchema = z.object({
   title: z.string().min(1, "Title cannot be empty"),
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
@@ -158,16 +161,17 @@ app.delete("/todos/:id", (req, res) => {
 
 // LLM Endpoint with Tool Calling
 app.post("/ask", async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, sessionId } = req.body;
   if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
   try {
     // Khởi tạo conversation history
-    const messages = [
+    let messages = conversations.get(sessionId) || [
       { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
     ];
 
+    // Thêm message của user mới
+    messages.push({ role: "user", content: prompt });
     let continueLoop = true;
 
     let iteration = 0;
@@ -248,6 +252,8 @@ app.post("/ask", async (req, res) => {
         // LLM không gọi tool nữa, kết thúc loop
         continueLoop = false;
 
+        conversations.set(sessionId, messages);
+
         // Trả về response cuối cùng
         return res.json({
           answer: response.message.content,
@@ -274,7 +280,7 @@ app.post("/ask", async (req, res) => {
         messages: messages,
         stream: false,
       });
-
+      conversations.set(sessionId, messages);
       return res.json({
         answer:
           finalResponse.message.content ||

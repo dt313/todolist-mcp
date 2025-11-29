@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "./ui/textarea";
@@ -16,6 +17,7 @@ export default function ChatBox() {
   const containerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  const sessionIdRef = useRef(uuidv4());
   const { addTodo, updateTodo, deleteTodo } = useTodos();
 
   const scrollToBottom = () => {
@@ -87,7 +89,7 @@ export default function ChatBox() {
       const res = await fetch(`${getApiUrl()}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text }),
+        body: JSON.stringify({ prompt: text, sessionId: sessionIdRef.current }),
       });
 
       const data = await res.json();

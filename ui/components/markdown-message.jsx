@@ -56,9 +56,26 @@ export default function MarkdownMessage({ content, role = "assistant" }) {
               ),
 
             // 🌟 Thêm style cho các thẻ Markdown khác
-            p: ({ node, ...props }) => (
-              <p className="leading-relaxed" {...props} />
-            ),
+            p: ({ node, children, ...props }) => {
+              // Nếu p chứa code block thì render div
+              const hasPre = node.children.some(
+                (child) => child.type === "element" && child.tagName === "pre"
+              );
+
+              if (hasPre) {
+                return (
+                  <div className="leading-relaxed" {...props}>
+                    {children}
+                  </div>
+                );
+              }
+
+              return (
+                <p className="leading-relaxed" {...props}>
+                  {children}
+                </p>
+              );
+            },
 
             h1: ({ node, ...props }) => (
               <h1 className="text-3xl font-bold " {...props} />
